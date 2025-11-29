@@ -1,6 +1,6 @@
 {
   "name": "vigilo-monorepo",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
   "license": "MIT",
