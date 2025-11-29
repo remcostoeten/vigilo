@@ -4,24 +4,24 @@ This directory contains example projects demonstrating how to use Vigilo with di
 
 ## Vue 3 + Vite Example
 
-Located in `vue-vite/`, this example shows how to use Vigilo with Vue 3 and the Composition API.
+Located in `vue/`, this example shows how to use Vigilo with Vue 3 and the Composition API.
 
 ### Running the Example
 
 ```bash
-cd vue-vite
+cd vue
 bun install
 bun run dev
 ```
 
 ## React + Vite Example
 
-Located in `react-vite/`, this example shows how to use Vigilo with React.
+Located in `react/`, this example shows how to use Vigilo with React.
 
 ### Running the Example
 
 ```bash
-cd react-vite
+cd react
 bun install
 bun run dev
 ```

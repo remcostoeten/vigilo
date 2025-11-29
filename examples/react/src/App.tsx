@@ -1,4 +1,5 @@
-import { Vigilo } from '@vigilo/react'
+import { useEffect } from 'react'
+import { Vigilo, useVigiloInstance } from '@vigilo/react'
 import type { CategoryConfig } from '@vigilo/react'
 
 const categories: readonly CategoryConfig[] = [
@@ -51,6 +52,21 @@ const categories: readonly CategoryConfig[] = [
 ] as const
 
 function App() {
+  // Access the Vigilo instance to add demo connections
+  const { addConnection } = useVigiloInstance({ instanceId: 'development' })
+
+  // Add a demo connection on mount
+  useEffect(() => {
+    // Wait a bit for the DOM to be ready
+    const timer = setTimeout(() => {
+      const feature1 = document.querySelector('#feature-1')
+      if (feature1) {
+        addConnection(0, feature1, 'Feature 1')
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [addConnection])
+
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
       <div className="max-w-4xl mx-auto space-y-8">

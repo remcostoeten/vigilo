@@ -12,7 +12,7 @@
         "vue": "^3.5.13",
       },
     },
-    "examples/react-vite": {
+    "examples/react": {
       "name": "vigilo-react-example",
       "version": "0.0.1",
       "dependencies": {
@@ -28,7 +28,7 @@
         "vite": "^5.0.0",
       },
     },
-    "examples/vue-vite": {
+    "examples/vue": {
       "name": "vigilo-vue-example",
       "version": "0.0.1",
       "dependencies": {
@@ -414,9 +414,9 @@
 
     "update-browserslist-db": ["update-browserslist-db@1.1.4", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-q0SPT4xyU84saUX+tomz1WLkxUbuaJnR1xWt17M7fJtEJigJeWUNGUqrauFXsHnqev9y9JTRGwk13tFBuKby4A=="],
 
-    "vigilo-react-example": ["vigilo-react-example@workspace:examples/react-vite"],
+    "vigilo-react-example": ["vigilo-react-example@workspace:examples/react"],
 
-    "vigilo-vue-example": ["vigilo-vue-example@workspace:examples/vue-vite"],
+    "vigilo-vue-example": ["vigilo-vue-example@workspace:examples/vue"],
 
     "vite": ["vite@5.4.21", "", { "dependencies": { "esbuild": "^0.21.3", "postcss": "^8.4.43", "rollup": "^4.20.0" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^18.0.0 || >=20.0.0", "less": "*", "lightningcss": "^1.21.0", "sass": "*", "sass-embedded": "*", "stylus": "*", "sugarss": "*", "terser": "^5.4.0" }, "optionalPeers": ["@types/node", "less", "lightningcss", "sass", "sass-embedded", "stylus", "sugarss", "terser"], "bin": { "vite": "bin/vite.js" } }, "sha512-o5a9xKjbtuhY6Bi5S3+HvbRERmouabWbyUcpXXUA1u+GNUKoROi9byOJ8M0nHbHYHkYICiMlqxkg1KkYmm25Sw=="],
 
