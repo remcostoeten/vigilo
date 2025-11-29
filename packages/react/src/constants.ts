@@ -92,9 +92,9 @@ export const baseTheme: Theme = {
   layout: {
     panel:
       'fixed flex flex-col gap-2 border px-4 pb-4 pt-0 w-96 shadow-2xl transition-all backdrop-blur-md z-50',
-    item: 'relative flex items-center gap-3 p-1.5 px-2 rounded transition-colors w-full',
+    item: 'relative flex items-center gap-3 p-1.5 px-2 transition-colors w-full',
     header: 'flex items-center justify-between gap-2 min-w-0 border-b pb-1',
-    badge: 'shrink-0 rounded px-1.5 py-0.5 text-xs font-medium',
+    badge: 'shrink-0 px-1.5 py-0.5 text-xs font-medium',
   },
   z: {
     lines: 9990,

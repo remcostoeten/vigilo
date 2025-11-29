@@ -121,6 +121,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     return map
   }, [connections])
 
+  const containerRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const todoRefs = useRef<Map<number, HTMLDivElement>>(new Map())
   const connectionPointRefs = useRef<Map<number, SVGCircleElement>>(new Map())
@@ -561,6 +562,11 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
         target.tagName === 'TEXTAREA' ||
         target.isContentEditable
       ) {
+        return
+      }
+
+      // Check if the event target is within this component instance
+      if (containerRef.current && !containerRef.current.contains(target)) {
         return
       }
 
@@ -1140,6 +1146,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   return (
     <>
+      <div ref={containerRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: -1 }}>
+        {/* Invisible container for keyboard event targeting */}
+      </div>
       <style>{`
         @keyframes vigilo-dash {
           to { stroke-dashoffset: -100; }

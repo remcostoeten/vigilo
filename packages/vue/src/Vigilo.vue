@@ -1,5 +1,15 @@
 <template>
   <Teleport to="body">
+    <!-- Invisible container for keyboard event targeting -->
+    <div
+      ref="containerRef"
+      :style="{
+        position: 'fixed',
+        inset: 0,
+        pointerEvents: 'none',
+        zIndex: -1,
+      }"
+    />
     <!-- Connection Lines SVG -->
     <svg
       v-if="shouldRenderLines || selectingIndex !== null"
@@ -129,18 +139,18 @@
       <div v-if="displayMode.value === 'minimal'" class="relative group" @mousedown="startDrag" :style="{ cursor: isDragging.value ? 'grabbing' : 'grab' }">
         <button
           @click="() => setAndPersistMode('compact')"
-          class="relative flex h-9 w-9 items-center justify-center rounded-md border border-zinc-800 bg-zinc-950/90 text-[9px] font-mono text-zinc-200 shadow-lg"
+          class="relative flex h-9 w-9 items-center justify-center border border-zinc-800 bg-zinc-950/90 text-[9px] font-mono text-zinc-200 shadow-lg"
         >
           <span class="truncate max-w-[1.75rem]">
             {{ (categoryData.displayName || category).slice(0, 2) }}
           </span>
-          <span class="absolute -top-1 -right-1 h-4 min-w-[1.1rem] rounded-full bg-blue-600 text-[9px] leading-4 text-center text-white px-1">
+          <span class="absolute -top-1 -right-1 h-4 min-w-[1.1rem] bg-blue-600 text-[9px] leading-4 text-center text-white px-1">
             {{ categoryData.items.length }}
           </span>
         </button>
         <div
           v-if="primaryItem"
-          class="absolute left-full top-1/2 ml-2 -translate-y-1/2 hidden group-hover:block rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200 shadow-xl min-w-[10rem] max-w-xs"
+          class="absolute left-full top-1/2 ml-2 -translate-y-1/2 hidden group-hover:block border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-zinc-200 shadow-xl min-w-[10rem] max-w-xs"
         >
           <div class="mb-1 text-[10px] font-mono uppercase tracking-wide text-zinc-500">Next task</div>
           <div class="truncate">{{ primaryItem.text }}</div>
@@ -167,7 +177,7 @@
               ⋯
               <span class="absolute -top-0.5 -right-0.5 text-[8px] font-mono opacity-40">s</span>
             </button>
-            <div v-if="isSettingsOpen" class="absolute right-0 top-full mt-2 w-56 rounded-md border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 shadow-xl z-[60]" @click.stop>
+            <div v-if="isSettingsOpen" class="absolute right-0 top-full mt-2 w-56 border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 shadow-xl z-[60]" @click.stop>
               <button
                 :class="['flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5', displayMode.value === 'full' ? 'text-white' : '']"
                 @click="() => handleSetMode('full')"
@@ -210,7 +220,7 @@
                   <button
                     v-for="{ color, label } in colorOptions"
                     :key="color"
-                    :class="['h-5 w-5 rounded border-2 transition-all', lineColor.value === color ? 'border-white scale-110' : 'border-zinc-700 hover:border-zinc-600']"
+                    :class="['h-5 w-5 border-2 transition-all', lineColor.value === color ? 'border-white scale-110' : 'border-zinc-700 hover:border-zinc-600']"
                     :style="{ backgroundColor: color }"
                     :title="label"
                     :aria-label="`Set line color to ${label}`"
@@ -230,7 +240,7 @@
                   step="0.05"
                   :value="lineOpacity.value"
                   @input="(e) => handleSetLineOpacity(parseFloat((e.target as HTMLInputElement).value))"
-                  class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
+                  class="w-full h-1 bg-zinc-800 appearance-none cursor-pointer"
                   :style="{
                     background: `linear-gradient(to right, ${lineColor.value} 0%, ${lineColor.value} ${lineOpacity.value * 100}%, rgb(39, 39, 42) ${lineOpacity.value * 100}%, rgb(39, 39, 42) 100%)`,
                   }"
@@ -248,7 +258,7 @@
                   step="0.05"
                   :value="componentOpacity.value"
                   @input="(e) => handleSetComponentOpacity(parseFloat((e.target as HTMLInputElement).value))"
-                  class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
+                  class="w-full h-1 bg-zinc-800 appearance-none cursor-pointer"
                 />
               </div>
               <div class="my-1 border-t border-zinc-800" />
@@ -286,7 +296,7 @@
               data-vigilo-search
               type="text"
               placeholder="Search items... (/)"
-              class="w-full px-2 py-1.5 text-xs font-mono bg-zinc-900 border border-zinc-800 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
+              class="w-full px-2 py-1.5 text-xs font-mono bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
             <button
               v-if="searchQuery"
@@ -320,7 +330,7 @@
               <button
                 @click.stop="() => setItemStatus(idx, getNextStatus(getItemStatus(idx)))"
                 :class="[
-                  'w-4 h-4 rounded border-2 flex items-center justify-center transition-all',
+                  'w-4 h-4 border-2 flex items-center justify-center transition-all',
                   getItemStatus(idx) === 'done'
                     ? 'border-green-500 bg-green-500/20'
                     : getItemStatus(idx) === 'working'
@@ -357,7 +367,7 @@
 
             <div
               v-if="item.info"
-              class="absolute left-0 top-full mt-2 hidden w-64 p-3 z-50 rounded border border-zinc-700 bg-zinc-900 text-xs text-zinc-300 shadow-xl group-hover:block whitespace-normal break-words"
+              class="absolute left-0 top-full mt-2 hidden w-64 p-3 z-50 border border-zinc-700 bg-zinc-900 text-xs text-zinc-300 shadow-xl group-hover:block whitespace-normal break-words"
             >
               {{ item.info }}
             </div>
@@ -383,7 +393,7 @@
     <Teleport v-if="toast" to="body">
       <div
         :class="[
-          'fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all vigilo-toast',
+          'fixed top-4 right-4 z-[10001] px-4 py-3 border shadow-xl font-mono text-sm transition-all vigilo-toast',
           toast.type === 'success'
             ? 'bg-green-500/10 border-green-500/30 text-green-400'
             : toast.type === 'error'
@@ -509,6 +519,7 @@ const mousePos = ref<Pos | null>(null)
 const tick = ref(0)
 
 // Refs
+const containerRef = ref<HTMLDivElement | null>(null)
 const panelRef = ref<HTMLDivElement | null>(null)
 const todoRefs = ref(new Map<number, HTMLDivElement>())
 const connectionPointRefs = ref(new Map<number, SVGCircleElement>())
@@ -800,12 +811,46 @@ onMounted(() => {
   storeRef.value = store
   storeState.value = store.getState()
   isMounted.value = true
-  
+
   unsubscribe = store.subscribe(() => {
     if (storeRef.value) {
       storeState.value = storeRef.value.getState()
     }
   })
+
+  // Global keyboard handler
+  const onKeyDown = (e: KeyboardEvent) => {
+    // Only trigger if not typing in an input/textarea
+    const target = e.target as HTMLElement
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    ) {
+      return
+    }
+
+    // Check if event target is within this component instance
+    if (containerRef.value && !containerRef.value.contains(target)) {
+      return
+    }
+
+    // Don't trigger if modifier keys are pressed
+    const hasModifier = e.metaKey || e.ctrlKey || e.altKey
+
+    // Open settings with 's' key
+    if ((e.key === 's' || e.key === 'S') && !hasModifier) {
+      e.preventDefault()
+      e.stopPropagation()
+      setIsSettingsOpen(true)
+      return
+    }
+  }
+
+  document.addEventListener('keydown', onKeyDown)
+  unsubscribe = () => {
+    document.removeEventListener('keydown', onKeyDown)
+  }
 })
 
 onBeforeUnmount(() => {

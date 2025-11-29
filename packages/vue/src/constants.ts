@@ -91,10 +91,10 @@ export const baseTheme: Theme = {
   },
   layout: {
     panel:
-      'fixed flex flex-col gap-2 rounded-lg border px-4 pb-4 pt-0 w-96 shadow-2xl transition-all backdrop-blur-md z-50',
-    item: 'relative flex items-center gap-3 p-1.5 px-2 rounded transition-colors w-full',
+      'fixed flex flex-col gap-2 border px-4 pb-4 pt-0 w-96 shadow-2xl transition-all backdrop-blur-md z-50',
+    item: 'relative flex items-center gap-3 p-1.5 px-2 transition-colors w-full',
     header: 'flex items-center justify-between gap-2 min-w-0 border-b pb-1',
-    badge: 'shrink-0 rounded px-1.5 py-0.5 text-xs font-medium',
+    badge: 'shrink-0 px-1.5 py-0.5 text-xs font-medium',
   },
   z: {
     lines: 9990,
@@ -111,7 +111,8 @@ export const baseTheme: Theme = {
  * @property {string} badge - The CSS classes for badges.
  * @property {object} connectorDot - The SVG attributes for the connector dot.
  * @property {string} connectorDot.fill - The fill color of the connector dot.
- * @property {number} connectorDot.r - The radius of the connector dot.
+ * @property {num
+ * ber} connectorDot.r - The radius of the connector dot.
  * @property {object} freeroamDot - The SVG attributes for the freeroam dot.
  * @property {string} freeroamDot.fill - The fill color of the freeroam dot.
  * @property {string} freeroamDot.stroke - The stroke color of the freeroam dot.

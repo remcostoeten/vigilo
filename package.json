@@ -1,6 +1,6 @@
 {
   "name": "@remcostoeten/vigilo",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
   "license": "MIT",
@@ -39,13 +39,16 @@
     "dist"
   ],
   "workspaces": [
+    "packages/*",
     "examples/*"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist packages/*/dist"
+    "clean": "rm -rf dist packages/*/dist",
+    "build:packages": "npm run build --workspaces --if-present",
+    "dev:packages": "npm run dev --workspaces --if-present"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

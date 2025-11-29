@@ -224,6 +224,16 @@ export function VigiloCommandPalette({
     return () => window.removeEventListener('keydown', handlePaletteKeyDown)
   }, [isOpen, selectedIndex, filteredTasks, handleSelectTask, managementMode])
 
+  // Lock background interactions when palette is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.inert = true
+      return () => {
+        document.body.inert = false
+      }
+    }
+  }, [isOpen])
+
   const handleClearConnection = useCallback((task: PaletteTaskSnapshot) => {
     task.clearConnection?.()
   }, [])
@@ -295,7 +305,7 @@ export function VigiloCommandPalette({
                       }}
                       className={`flex w-full flex-col gap-1 px-5 py-3 text-left transition-colors ${
                         isSelected
-                          ? 'bg-blue-500/20 ring-2 ring-blue-500'
+                          ? 'bg-white/10 ring-2 ring-zinc-600'
                           : 'hover:bg-white/5'
                       }`}
                     onClick={() => handleSelectTask(task)}
@@ -310,7 +320,7 @@ export function VigiloCommandPalette({
                         {instance.label}
                         {task.hasConnection && (
                             <span
-                              className="inline-flex h-2 w-2 rounded-full bg-blue-400"
+                              className="inline-flex h-2 w-2 rounded-full bg-zinc-400"
                               aria-label="Has connection"
                             />
                         )}
@@ -389,7 +399,7 @@ function ManagementView({
           </div>
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <button
-              className="rounded-md border border-blue-500/40 px-3 py-1 text-blue-200 hover:bg-blue-500/10"
+              className="rounded-md border border-zinc-600/40 px-3 py-1 text-zinc-200 hover:bg-zinc-600/10"
               onClick={() => {
                 closePalette()
                 instance.actions.focus()

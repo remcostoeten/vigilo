@@ -27,7 +27,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@remcostoeten/vigilo-core": "^0.0.12"
+    "@remcostoeten/vigilo-core": "file:../core"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
