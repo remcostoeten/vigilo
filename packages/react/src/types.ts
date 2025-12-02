@@ -1,4 +1,4 @@
-import type { CategoryConfig, VigiloConfig } from '@remcostoeten/vigilo-core'
+import type { CategoryConfig, VigiloConfig, VigiloStorage } from '@remcostoeten/vigilo-core'
 import type { baseTheme, baseStyles } from './constants'
 
 export type { CategoryConfig, VigiloConfig }
@@ -15,6 +15,7 @@ export interface VigiloProps<
 > extends VigiloConfig<TCategories[number]['id']> {
   categories: TCategories
   enabled?: boolean
+  storage?: VigiloStorage
   /** Override any theme token while keeping defaults for unspecified keys */
   themeOverrides?: Partial<typeof baseTheme> & {
     modes?: {

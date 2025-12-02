@@ -72,3 +72,17 @@ export type VigiloState = {
   componentOpacity: number
   statuses: Map<number, TodoStatus>
 }
+
+export interface VigiloStorage {
+  loadState(): Partial<VigiloState>
+  savePosition(position: Pos): void
+  saveConnections(connections: Connection[]): void
+  saveDisplayMode(mode: DisplayMode): void
+  saveHidden(isHidden: boolean): void
+  saveShowLines(showLines: boolean): void
+  saveShowBadges(showBadges: boolean): void
+  saveLineColor(color: string): void
+  saveLineOpacity(opacity: number): void
+  saveComponentOpacity(opacity: number): void
+  saveStatuses(statuses: Map<number, TodoStatus>): void
+}

@@ -19,7 +19,6 @@ import type {
   DisplayMode,
   UndoSnapshot,
 } from '@remcostoeten/vigilo-core'
-import { createStorageKeys } from '@remcostoeten/vigilo-core'
 import { createDefaultState } from '@remcostoeten/vigilo-core'
 import { createVigiloStore, type VigiloStore } from '@remcostoeten/vigilo-core'
 import { generateSelector, getElementLabel } from './dom'
@@ -40,6 +39,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   category,
   instanceId,
   categories,
+  storage,
   themeOverrides,
   stylesOverrides,
   colorMode,
@@ -52,11 +52,6 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const instanceKey = useMemo(
     () => instanceId || category,
     [instanceId, category]
-  )
-
-  const keys = useMemo(
-    () => createStorageKeys(instanceKey),
-    [instanceKey]
   )
 
   const theme = useMemo(
@@ -131,7 +126,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   // Initialization
   useEffect(() => {
-    const store = createVigiloStore(keys, { lineColor: primaryLineColor })
+    const store = createVigiloStore(instanceKey, {
+      storage,
+      overrides: { lineColor: primaryLineColor }
+    })
     storeRef.current = store
     setStoreState(store.getState())
     setIsMounted(true)
@@ -143,13 +141,13 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       storeRef.current = null
       setIsMounted(false)
     }
-  }, [keys, primaryLineColor])
-
+  }, [instanceKey, storage, primaryLineColor])
+  
   // Global Listeners - optimized for drag performance
   useEffect(() => {
     let ticking = false
-
-    function handleTick() {
+		
+		function handleTick() {
       if (ticking || isDragging) return // Skip RAF updates during drag for better performance
       ticking = true
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
@@ -158,8 +156,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
         ticking = false
       })
     }
-
-    window.addEventListener('scroll', handleTick, { passive: true })
+		
+		window.addEventListener('scroll', handleTick, { passive: true })
     window.addEventListener('resize', handleTick, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleTick)

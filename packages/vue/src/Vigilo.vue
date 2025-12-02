@@ -450,9 +450,8 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import type { CategoryConfig, Connection, DisplayMode, Pos, TodoStatus, UndoSnapshot } from '@remcostoeten/vigilo-core'
+import type { CategoryConfig, Connection, DisplayMode, Pos, TodoStatus, UndoSnapshot, VigiloStorage } from '@remcostoeten/vigilo-core'
 import { calculateBezier } from '@remcostoeten/vigilo-core'
-import { createStorageKeys } from '@remcostoeten/vigilo-core'
 import { createDefaultState } from '@remcostoeten/vigilo-core'
 import { createVigiloStore, type VigiloStore } from '@remcostoeten/vigilo-core'
 import { generateSelector, getElementLabel } from './dom'
@@ -460,7 +459,7 @@ import { MAX_VISIBLE_ITEMS, UNDO_WINDOW_MS } from './constants'
 import type { VigiloProps } from './types'
 import { mergeTheme, mergeStyles } from './theme'
 
-const props = withDefaults(defineProps<VigiloProps>(), {
+const props = withDefaults(defineProps<VigiloProps & { storage?: VigiloStorage }>(), {
   enabled: true,
   colorMode: 'dark',
 })
@@ -468,7 +467,6 @@ const props = withDefaults(defineProps<VigiloProps>(), {
 // Computed values
 const categoryData = computed(() => props.categories.find((c) => c.id === props.category))
 const instanceKey = computed(() => props.instanceId || props.category)
-const keys = computed(() => createStorageKeys(instanceKey.value))
 const theme = computed(() => mergeTheme(props.themeOverrides, props.colorMode))
 const primaryLineColor = computed(() => theme.value.colors.primary)
 const styles = computed(() => mergeStyles(theme.value, props.stylesOverrides))
@@ -807,7 +805,10 @@ function importConfig() {
 let unsubscribe: (() => void) | null = null
 
 onMounted(() => {
-  const store = createVigiloStore(keys.value, { lineColor: primaryLineColor.value })
+  const store = createVigiloStore(instanceKey.value, {
+    storage: props.storage,
+    overrides: { lineColor: primaryLineColor.value },
+  })
   storeRef.value = store
   storeState.value = store.getState()
   isMounted.value = true

@@ -1,5 +1,4 @@
-import type { StorageKeys, VigiloState } from './types'
-import { loadState } from './storage'
+import type { StorageKeys, VigiloState, VigiloStorage } from './types'
 
 const DEFAULT_POSITION = { x: 20, y: 20 }
 const DEFAULT_LINE_COLOR = '#3b82f6'
@@ -35,8 +34,8 @@ export function createDefaultState(overrides?: VigiloStateOverrides): VigiloStat
 /**
  * Hydrates persisted state from storage and merges it with runtime overrides.
  */
-export function hydrateState(keys: StorageKeys, overrides?: VigiloStateOverrides): VigiloState {
-  const saved = loadState(keys)
+export function hydrateState(storage: VigiloStorage, overrides?: VigiloStateOverrides): VigiloState {
+  const saved = storage.loadState()
   return createDefaultState({
     ...saved,
     ...overrides,

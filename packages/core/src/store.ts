@@ -2,22 +2,11 @@ import type {
   Connection,
   DisplayMode,
   Pos,
-  StorageKeys,
   TodoStatus,
   VigiloState,
+  VigiloStorage,
 } from './types'
-import {
-  saveComponentOpacity,
-  saveConnections,
-  saveDisplayMode,
-  saveHidden,
-  saveLineColor,
-  saveLineOpacity,
-  savePosition,
-  saveShowBadges,
-  saveShowLines,
-  saveStatuses,
-} from './storage'
+import { createLocalStorageVigiloStorage } from './storage'
 import { hydrateState } from './state'
 
 type Listener = () => void
@@ -43,14 +32,21 @@ export type VigiloStore = {
   resetStatuses: () => void
 }
 
+type VigiloStoreOptions = {
+  storage?: VigiloStorage
+  overrides?: Partial<VigiloState>
+}
+
 /**
  * Creates a lightweight store for Vigilo state that persists via localStorage.
  */
 export function createVigiloStore(
-  keys: StorageKeys,
-  overrides?: Partial<VigiloState>
+  instanceKey: string,
+  options?: VigiloStoreOptions
 ): VigiloStore {
-  let state = hydrateState(keys, overrides)
+  const storage = options?.storage ?? createLocalStorageVigiloStorage(instanceKey)
+  
+  let state = hydrateState(storage, options?.overrides)
 
   const listeners = new Set<Listener>()
 
@@ -73,52 +69,52 @@ export function createVigiloStore(
   function setPosition(position: Pos, options?: PositionOptions) {
     update({ position: { ...position } })
     if (options?.persist === false) return
-    savePosition(keys, position)
+    storage.savePosition(position)
   }
 
   function setConnections(connections: Connection[]) {
     update({ connections: [...connections] })
-    saveConnections(keys, connections)
+    storage.saveConnections(connections)
   }
 
   function setDisplayMode(mode: DisplayMode) {
     update({ displayMode: mode })
-    saveDisplayMode(keys, mode)
+    storage.saveDisplayMode(mode)
   }
 
   function setHidden(isHidden: boolean) {
     update({ isHidden })
-    saveHidden(keys, isHidden)
+    storage.saveHidden(isHidden)
   }
 
   function setShowLines(showLines: boolean) {
     update({ showLines })
-    saveShowLines(keys, showLines)
+    storage.saveShowLines(showLines)
   }
 
   function setShowBadges(showBadges: boolean) {
     update({ showBadges })
-    saveShowBadges(keys, showBadges)
+    storage.saveShowBadges(showBadges)
   }
 
   function setLineColor(color: string) {
     update({ lineColor: color })
-    saveLineColor(keys, color)
+    storage.saveLineColor(color)
   }
 
   function setLineOpacity(opacity: number) {
     update({ lineOpacity: opacity })
-    saveLineOpacity(keys, opacity)
+    storage.saveLineOpacity(opacity)
   }
 
   function setComponentOpacity(opacity: number) {
     update({ componentOpacity: opacity })
-    saveComponentOpacity(keys, opacity)
+    storage.saveComponentOpacity(opacity)
   }
 
   function setStatuses(statuses: Map<number, TodoStatus>) {
     update({ statuses: new Map(statuses) })
-    saveStatuses(keys, statuses)
+    storage.saveStatuses(statuses)
   }
 
   function setStatus(index: number, status: TodoStatus) {
