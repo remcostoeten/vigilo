@@ -1,12 +1,17 @@
 import type { StorageKeys, VigiloState, DisplayMode, TodoStatus, VigiloStorage, Pos } from './types'
 
 /**
- * The prefix for the localStorage keys.
+ * The prefix for all localStorage keys used by Vigilo.
+ * @internal
  */
 const STORAGE_PREFIX = 'vigilo-state-'
 
 /**
- * Creates namespaced localStorage keys to isolate multiple overlays per page.
+ * Creates a set of namespaced localStorage keys for a specific Vigilo instance.
+ * This prevents state from multiple instances on the same page from colliding.
+ * @param instanceKey - A unique key for the Vigilo instance.
+ * @returns A `StorageKeys` object with namespaced keys.
+ * @internal
  */
 function createStorageKeys(instanceKey: string): StorageKeys {
   return {
@@ -24,6 +29,12 @@ function createStorageKeys(instanceKey: string): StorageKeys {
   }
 }
 
+/**
+ * Creates a `VigiloStorage` adapter that uses the browser's `localStorage`.
+ * This is the default persistence mechanism for Vigilo.
+ * @param instanceKey - A unique key to namespace the storage for this Vigilo instance.
+ * @returns A `VigiloStorage` object that interacts with `localStorage`.
+ */
 export function createLocalStorageVigiloStorage(instanceKey: string): VigiloStorage {
   const keys = createStorageKeys(instanceKey)
 

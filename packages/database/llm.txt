@@ -1,0 +1,122 @@
+# Vigilo Database Persistence - LLM Context
+
+## Package Overview
+@vigilo/database provides complete database persistence solution for Vigilo overlays. Users can opt-in to store tasks, positions, connections, and settings in their own database via CLI schema generation.
+
+## Key Features
+- CLI schema generation for Prisma, Drizzle, and raw SQL
+- API storage adapter for REST API communication
+- Server query helpers for Prisma and Drizzle
+- Next.js API route handlers with validation
+- tRPC router integration with Zod validation
+- React Provider for automatic storage handling
+- Full TypeScript support
+- Authentication and multi-tenant support
+
+## Installation
+```bash
+npm install @vigilo/database @remcostoeten/vigilo-core @remcostoeten/vigilo-react
+npm install @prisma/client prisma  # OR drizzle-orm postgres
+```
+
+## CLI Usage
+```bash
+npx vigilo-db --prisma --out prisma/schema.prisma
+npx vigilo-db --drizzle --out lib/db/schema.ts
+npx vigilo-db --sql --out db/vigilo.sql
+```
+
+## Database Schema
+Core tables:
+- VigiloInstance: Instance management with optional user association
+- VigiloPosition: Panel position (x, y coordinates)
+- VigiloConnection: Task-to-element connections with selectors or positions
+- VigiloSettings: Display settings (mode, colors, opacity, visibility)
+- VigiloStatus: Task completion status (todo/working/done)
+
+## API Endpoints Pattern
+All endpoints: `/api/vigilo/[resource]/[instanceKey]`
+
+Key endpoints:
+- GET /state/[instanceKey] - Load complete state
+- POST /position/[instanceKey] - Save panel position
+- POST /connections/[instanceKey] - Save task connections
+- POST /statuses/[instanceKey] - Save task statuses
+- Plus 7 other setting endpoints ( display mode, hidden state, lines, badges, colors, opacity )
+
+## React Integration
+
+### Provider Pattern ( Recommended )
+```tsx
+<VigiloProvider
+  baseUrl="/api/vigilo"
+  defaultInstanceId="user-tasks"
+  getAuthToken={() => localStorage.getItem('token')}
+>
+  <Vigilo category="dev" categories={categories} />
+</VigiloProvider>
+```
+
+### Manual Storage
+```tsx
+const storage = createApiVigiloStorage({
+  baseUrl: '/api/vigilo',
+  instanceId: 'user-tasks',
+  token: user.authToken
+})
+
+<Vigilo storage={storage} category="dev" categories={categories} />
+```
+
+## Server Setup Examples
+
+### Next.js + Prisma
+```typescript
+import { createVigiloApiHandlers, createVigiloPrismaQueries } from '@vigilo/database'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+const queries = createVigiloPrismaQueries(prisma)
+const handlers = createVigiloApiHandlers(queries)
+
+export async function GET(request, { params }) {
+  return handlers.handleLoadState(request, { params })
+}
+```
+
+### Next.js + Drizzle
+```typescript
+import { createVigiloApiHandlers, createVigiloDrizzleQueries } from '@vigilo/database'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+
+const client = postgres(process.env.DATABASE_URL!)
+const db = drizzle(client, { schema })
+const queries = createVigiloDrizzleQueries(db)
+const handlers = createVigiloApiHandlers(queries)
+```
+
+## Key Exports
+- CLI: `program` from './cli'
+- Storage: `createApiVigiloStorage`
+- Server: `createVigiloPrismaQueries`, `createVigiloDrizzleQueries`, `createVigiloApiHandlers`
+- React: `VigiloProvider`, `useVigiloStorage`
+- Types: `ApiStorageConfig`, `VigiloStateResponse`, `VigiloApiRequest`
+
+## Security Features
+- Bearer token authentication support
+- Instance isolation by instanceKey
+- Optional userId field for multi-tenant apps
+- Server-side validation for all inputs
+
+## Performance Features
+- Lazy loading per instance
+- Optimistic updates ( optional )
+- Debounced sync for rapid updates
+- Error recovery with localStorage fallback
+
+## Migration Path
+Simply replace localStorage with Provider or manual storage - all existing functionality remains identical.
+
+## TypeScript Support
+Full TypeScript support with comprehensive types for all configurations and API responses.

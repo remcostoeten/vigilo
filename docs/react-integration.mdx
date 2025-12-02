@@ -152,6 +152,7 @@ const categories: CategoryConfig[] = [
 ## Best Practices
 
 ### 1. Use Unique Instance IDs
+
 ```tsx
 // Good: Unique identifiers prevent conflicts
 <Vigilo category="api" instanceId="user-service" />
@@ -163,6 +164,7 @@ const categories: CategoryConfig[] = [
 ```
 
 ### 2. Structure Categories Logically
+
 ```tsx
 const categories = [
   {
@@ -186,6 +188,7 @@ const categories = [
 ```
 
 ### 3. Handle Loading States
+
 ```tsx
 function App() {
   const [categories, setCategories] = useState<CategoryConfig[] | null>(null)

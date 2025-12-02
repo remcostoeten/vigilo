@@ -1,7 +1,7 @@
-# 
+#
 
-**Vigilo** *(verb)*  
-/ˈwi.ɡi.loː/ — *Latin, “to watch, stay alert, keep aware.”*
+**Vigilo** _(verb)_  
+/ˈwi.ɡi.loː/ — _Latin, “to watch, stay alert, keep aware.”_
 
 A lightweight task awareness overlay for development environments. Vigilo keeps tasks visible on top of your interface, helping you stay focused, plan effectively, and avoid forgetting important work. Designed for developers who want persistent task clarity without leaving the UI.
 
@@ -20,26 +20,26 @@ yarn add @remcostoeten/vigilo
 ### React
 
 ```tsx
-import { Vigilo } from '@remcostoeten/vigilo/react'
-import type { CategoryConfig } from '@remcostoeten/vigilo/react'
+import { Vigilo } from "@remcostoeten/vigilo/react";
+import type { CategoryConfig } from "@remcostoeten/vigilo/react";
 
 const categories: CategoryConfig[] = [
   {
-    id: 'my-tasks',
-    displayName: 'My Tasks',
+    id: "my-tasks",
+    displayName: "My Tasks",
     items: [
-      { text: 'Fix bug in login flow', action: 'fix' },
-      { text: 'Add user profile page', action: 'add' },
+      { text: "Fix bug in login flow", action: "fix" },
+      { text: "Add user profile page", action: "add" },
     ],
   },
-]
+];
 
 function App() {
   return (
     <div>
       <Vigilo category="my-tasks" categories={categories} enabled={true} />
     </div>
-  )
+  );
 }
 ```
 
@@ -51,11 +51,11 @@ import {
   loadState,
   savePosition,
   calculateBezier,
-} from 'vigilo'
-import { generateSelector } from '@remcostoeten/vigilo/react'
+} from "vigilo";
+import { generateSelector } from "@remcostoeten/vigilo/react";
 
-const keys = createStorageKeys('my-instance')
-const state = loadState(keys)
+const keys = createStorageKeys("my-instance");
+const state = loadState(keys);
 ```
 
 ## API
@@ -73,33 +73,33 @@ const state = loadState(keys)
 
 ```typescript
 type CategoryConfig = {
-  id: string
-  displayName?: string
-  items: TodoItem[]
-}
+  id: string;
+  displayName?: string;
+  items: TodoItem[];
+};
 
 type TodoItem = {
-  text: string
-  action?: string
-  info?: string
-  description?: string
-  notes?: string
-  priority?: 'low' | 'medium' | 'high'
-  tags?: string[]
-  createdAt?: string
-  updatedAt?: string
-}
+  text: string;
+  action?: string;
+  info?: string;
+  description?: string;
+  notes?: string;
+  priority?: "low" | "medium" | "high";
+  tags?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+};
 ```
 
 ### Vue Composition
 
 ```ts
-import { useVigiloStore } from '@remcostoeten/vigilo/vue'
+import { useVigiloStore } from "@remcostoeten/vigilo/vue";
 
 const { state, store } = useVigiloStore({
-  category: 'dev',
-  instanceId: 'dev-overlay',
-})
+  category: "dev",
+  instanceId: "dev-overlay",
+});
 ```
 
 `state` stays reactive inside Vue components, and `store` exposes the same mutation helpers used by the React overlay so you can build custom Vue shells without reimplementing the business logic.
@@ -127,13 +127,14 @@ Pass `themeOverrides`, `stylesOverrides`, or set a `colorMode` to align Vigilo w
   categories={categories}
   colorMode="dark"
   themeOverrides={{
-    colors: { primary: 'var(--brand-blue)', textMain: 'text-white' },
+    colors: { primary: "var(--brand-blue)", textMain: "text-white" },
     modes: {
-      light: { colors: { bgPanel: 'bg-white', textMain: 'text-zinc-900' } },
+      light: { colors: { bgPanel: "bg-white", textMain: "text-zinc-900" } },
     },
   }}
   stylesOverrides={{
-    panel: 'fixed right-4 top-4 rounded-2xl border border-white/10 bg-slate-900/80',
+    panel:
+      "fixed right-4 top-4 rounded-2xl border border-white/10 bg-slate-900/80",
   }}
 />
 ```
