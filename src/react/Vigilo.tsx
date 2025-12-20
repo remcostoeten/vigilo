@@ -82,8 +82,10 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [settingsMenuIndex, setSettingsMenuIndex] = useState<number | null>(null)
+  const [settingsMenuPosition, setSettingsMenuPosition] = useState<{ top?: string; bottom?: string; left?: string; right?: string }>({})
   const settingsMenuRefs = useRef<(HTMLButtonElement | null)[]>([])
   const settingsMenuContainerRef = useRef<HTMLDivElement | null>(null)
+  const settingsButtonRef = useRef<HTMLButtonElement | null>(null)
   const [canUndo, setCanUndo] = useState(false)
   const [openIssueIndex, setOpenIssueIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null)
@@ -526,7 +528,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     []
   )
 
-  
+
   function handleSetMode(mode: DisplayMode) {
     setAndPersistMode(mode)
     setIsSettingsOpen(false)
@@ -665,6 +667,52 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     }
   }, [openIssueIndex])
 
+  // Calculate settings menu position to keep it within viewport
+  useEffect(() => {
+    if (!isSettingsOpen || !settingsMenuContainerRef.current || !panelRef.current) {
+      return
+    }
+
+    const menuEl = settingsMenuContainerRef.current
+    const panelEl = panelRef.current
+    const buttonEl = settingsButtonRef.current
+
+    if (!buttonEl) return
+
+    // Get dimensions
+    const menuRect = menuEl.getBoundingClientRect()
+    const panelRect = panelEl.getBoundingClientRect()
+    const buttonRect = buttonEl.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+
+    const position: { top?: string; bottom?: string; left?: string; right?: string } = {}
+
+    // Check if menu would overflow right edge
+    if (panelRect.right < menuRect.width) {
+      // Not enough space on right, align to left
+      position.left = '0'
+    } else {
+      // Default: align to right
+      position.right = '0'
+    }
+
+    // Check if menu would overflow bottom edge
+    const spaceBelow = viewportHeight - buttonRect.bottom
+    const spaceAbove = buttonRect.top
+
+    if (spaceBelow < menuRect.height && spaceAbove > spaceBelow) {
+      // Not enough space below, and more space above - position above
+      position.bottom = '100%'
+      position.top = undefined
+    } else {
+      // Default: position below
+      position.top = '100%'
+      position.bottom = undefined
+    }
+
+    setSettingsMenuPosition(position)
+  }, [isSettingsOpen])
+
   // Settings menu keyboard accessibility and focus trap
   useEffect(() => {
     if (!isSettingsOpen) {
@@ -768,17 +816,17 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       }
     }
 
-      // Focus trap: prevent focus from escaping the menu
-      function handleFocus(e: FocusEvent) {
-        const target = e.target as HTMLElement
-        const menuElement = menuContainer || settingsMenuRefs.current[0]?.closest('[role="menu"]')
-        
-        if (menuElement && !menuElement.contains(target) && document.activeElement !== menuElement) {
-          e.preventDefault()
-          e.stopPropagation()
-          menuButtons[0]?.focus()
-        }
+    // Focus trap: prevent focus from escaping the menu
+    function handleFocus(e: FocusEvent) {
+      const target = e.target as HTMLElement
+      const menuElement = menuContainer || settingsMenuRefs.current[0]?.closest('[role="menu"]')
+
+      if (menuElement && !menuElement.contains(target) && document.activeElement !== menuElement) {
+        e.preventDefault()
+        e.stopPropagation()
+        menuButtons[0]?.focus()
       }
+    }
 
     // Focus the first button when menu opens
     if (menuButtons.length > 0) {
@@ -790,7 +838,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
     window.addEventListener('keydown', onKeyDown)
     document.addEventListener('focusin', handleFocus)
-    
+
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       document.removeEventListener('focusin', handleFocus)
@@ -933,7 +981,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file) return
-      
+
       const reader = new FileReader()
       reader.onload = (e) => {
         try {
@@ -1006,71 +1054,71 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     const freeroamPreviewLine =
       selectingIndex !== null && isFreeroam && previewPosition
         ? (() => {
-            const el = todoRefs.current.get(selectingIndex)
-            if (!el || !document.body.contains(el)) return null
+          const el = todoRefs.current.get(selectingIndex)
+          if (!el || !document.body.contains(el)) return null
 
-            const rect = el.getBoundingClientRect()
-            const start = {
-              x: rect.right,
-              y: rect.top + rect.height / 2,
-            }
-            const d = calculateBezier(start, previewPosition)
+          const rect = el.getBoundingClientRect()
+          const start = {
+            x: rect.right,
+            y: rect.top + rect.height / 2,
+          }
+          const d = calculateBezier(start, previewPosition)
 
-            return (
-              <g key="preview-freeroam">
-                <path
-                  d={d}
-                  stroke={theme.colors.freeroam}
-                  strokeWidth="2"
-                  fill="none"
-                  strokeDasharray="6 4"
-                  opacity="0.3"
-                />
-                <circle
-                  cx={previewPosition.x}
-                  cy={previewPosition.y}
-                  {...styles.freeroamDot}
-                  opacity="0.5"
-                />
-              </g>
-            )
-          })()
+          return (
+            <g key="preview-freeroam">
+              <path
+                d={d}
+                stroke={theme.colors.freeroam}
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="6 4"
+                opacity="0.3"
+              />
+              <circle
+                cx={previewPosition.x}
+                cy={previewPosition.y}
+                {...styles.freeroamDot}
+                opacity="0.5"
+              />
+            </g>
+          )
+        })()
         : null
 
     // Render preview line when in regular selection mode
     const selectionPreviewLine =
       selectingIndex !== null && !isFreeroam && mousePos
         ? (() => {
-            const el = todoRefs.current.get(selectingIndex)
-            if (!el || !document.body.contains(el)) return null
+          const el = todoRefs.current.get(selectingIndex)
+          if (!el || !document.body.contains(el)) return null
 
-            const rect = el.getBoundingClientRect()
-            const start = {
-              x: rect.right,
-              y: rect.top + rect.height / 2,
-            }
+          const rect = el.getBoundingClientRect()
+          const start = {
+            x: rect.right,
+            y: rect.top + rect.height / 2,
+          }
 
-            let end = mousePos
-            if (hoveredTarget) {
-              const tRect = hoveredTarget.getBoundingClientRect()
-              end = { x: tRect.left, y: tRect.top + tRect.height / 2 }
-            }
+          let end = mousePos
+          if (hoveredTarget) {
+            const tRect = hoveredTarget.getBoundingClientRect()
+            end = { x: tRect.left, y: tRect.top + tRect.height / 2 }
+          }
 
-            const d = calculateBezier(start, end)
+          const d = calculateBezier(start, end)
 
-            return (
-              <g key="preview-selection">
-                <path
-                  d={d}
-                  stroke={theme.colors.primary}
-                  strokeWidth="2"
-                  fill="none"
-                  strokeDasharray="6 4"
-                  opacity="0.5"
-                />
-              </g>
-            )
-          })()
+          return (
+            <g key="preview-selection">
+              <path
+                d={d}
+                stroke={theme.colors.primary}
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="6 4"
+                opacity="0.5"
+              />
+            </g>
+          )
+        })()
         : null
 
     return createPortal(
@@ -1172,15 +1220,15 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         ? 4.5
                         : 5
                       : isFree
-                      ? styles.freeroamDot.r
-                      : styles.connectorDot.r
+                        ? styles.freeroamDot.r
+                        : styles.connectorDot.r
                   }
                   opacity={
                     hoveredConnection === conn.todoIndex
                       ? 1
                       : isFree
-                      ? styles.freeroamDot.opacity
-                      : strokeOpacity
+                        ? styles.freeroamDot.opacity
+                        : strokeOpacity
                   }
                   style={{
                     pointerEvents: 'none',
@@ -1202,7 +1250,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
     if (!categoryData) return []
     if (!searchQuery.trim()) return categoryData.items
     const query = searchQuery.toLowerCase()
-    return categoryData.items.filter((item) => 
+    return categoryData.items.filter((item) =>
       item.text.toLowerCase().includes(query) ||
       item.action?.toLowerCase().includes(query) ||
       item.info?.toLowerCase().includes(query) ||
@@ -1216,8 +1264,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
 
   if (isHidden) return null
 
-  const itemsToRender = isExpanded 
-    ? filteredItems 
+  const itemsToRender = isExpanded
+    ? filteredItems
     : filteredItems.slice(0, maxItemsForMode)
   const hasMore = filteredItems.length > maxItemsForMode
   const primaryItem = categoryData.items[0]
@@ -1278,7 +1326,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
               inset: 0,
               zIndex: theme.z.overlay,
               // Must be none to let clicks hit the DOM
-              pointerEvents: 'none', 
+              pointerEvents: 'none',
               cursor: 'crosshair', // This won't show if pointerEvents is none, but that's acceptable tradeoff
             }}
           />,
@@ -1288,15 +1336,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`${styles.panel} ${
-          displayMode === 'compact' ? 'w-72 px-3 pb-3 pt-0 gap-1 text-xs' : ''
-        } ${
-          displayMode === 'minimal'
+        className={`${styles.panel} ${displayMode === 'compact' ? 'w-72 px-3 pb-3 pt-0 gap-1 text-xs' : ''
+          } ${displayMode === 'minimal'
             ? 'w-auto h-auto p-0 border-none bg-transparent shadow-none'
             : ''
-        } ${
-          displayMode === 'full' ? 'px-3 pb-3 pt-0' : ''
-        }`}
+          } ${displayMode === 'full' ? 'px-3 pb-3 pt-0' : ''
+          }`}
         style={{
           left: pos.x,
           top: pos.y,
@@ -1340,8 +1385,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
           </div>
         ) : (
           <>
-            <div 
-              className={`${styles.header} relative`} 
+            <div
+              className={`${styles.header} relative`}
               onMouseDown={startDrag}
               style={{
                 cursor: isDragging ? 'grabbing' : 'grab',
@@ -1355,6 +1400,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <button
+                  ref={settingsButtonRef}
                   onClick={(e) => {
                     e.stopPropagation()
                     setIsSettingsOpen((open) => !open)
@@ -1371,7 +1417,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                     ref={settingsMenuContainerRef}
                     role="menu"
                     aria-label="Vigilo settings menu"
-                    className="absolute right-0 top-full mt-2 w-56 rounded-md border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 shadow-xl z-[60]"
+                    className="absolute w-56 rounded-md border border-zinc-800 bg-zinc-950 py-1 text-xs text-zinc-200 shadow-xl"
+                    style={{
+                      zIndex: theme.z.panel + 10,
+                      ...settingsMenuPosition,
+                      [settingsMenuPosition.bottom ? 'marginBottom' : 'marginTop']: '0.5rem',
+                    }}
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
                       // Prevent default browser behavior for arrow keys
@@ -1384,9 +1435,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       ref={(el) => (settingsMenuRefs.current[0] = el)}
                       role="menuitem"
                       aria-selected={settingsMenuIndex === 0}
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
-                        displayMode === 'full' ? 'text-white' : ''
-                      } ${settingsMenuIndex === 0 ? 'bg-white/10' : ''}`}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${displayMode === 'full' ? 'text-white' : ''
+                        } ${settingsMenuIndex === 0 ? 'bg-white/10' : ''}`}
                       onClick={() => handleSetMode('full')}
                     >
                       <span>Full panel</span>
@@ -1396,9 +1446,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       ref={(el) => (settingsMenuRefs.current[1] = el)}
                       role="menuitem"
                       aria-selected={settingsMenuIndex === 1}
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
-                        displayMode === 'compact' ? 'text-white' : ''
-                      } ${settingsMenuIndex === 1 ? 'bg-white/10' : ''}`}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${displayMode === 'compact' ? 'text-white' : ''
+                        } ${settingsMenuIndex === 1 ? 'bg-white/10' : ''}`}
                       onClick={() => handleSetMode('compact')}
                     >
                       <span>Compact panel</span>
@@ -1408,9 +1457,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       ref={(el) => (settingsMenuRefs.current[2] = el)}
                       role="menuitem"
                       aria-selected={settingsMenuIndex === 2}
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
-                        settingsMenuIndex === 2 ? 'bg-white/10' : ''
-                      }`}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${settingsMenuIndex === 2 ? 'bg-white/10' : ''
+                        }`}
                       onClick={() => handleSetMode('minimal')}
                     >
                       <span>Minimal dot</span>
@@ -1420,9 +1468,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       ref={(el) => (settingsMenuRefs.current[3] = el)}
                       role="menuitem"
                       aria-selected={settingsMenuIndex === 3}
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
-                        settingsMenuIndex === 3 ? 'bg-white/10' : ''
-                      }`}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${settingsMenuIndex === 3 ? 'bg-white/10' : ''
+                        }`}
                       onClick={handleToggleLines}
                     >
                       <span>Show connection lines</span>
@@ -1434,9 +1481,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       ref={(el) => (settingsMenuRefs.current[4] = el)}
                       role="menuitem"
                       aria-selected={settingsMenuIndex === 4}
-                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${
-                        settingsMenuIndex === 4 ? 'bg-white/10' : ''
-                      }`}
+                      className={`flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5 focus:bg-white/10 focus:outline-none ${settingsMenuIndex === 4 ? 'bg-white/10' : ''
+                        }`}
                       onClick={handleToggleBadges}
                     >
                       <span>Show badges</span>
@@ -1465,9 +1511,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                             }}
                             role="menuitem"
                             onClick={() => handleSetLineColor(color)}
-                            className={`h-5 w-5 rounded border-2 transition-all focus:outline-none focus:ring-2 focus:ring-white/50 ${
-                              lineColor === color ? 'border-white scale-110' : 'border-zinc-700 hover:border-zinc-600'
-                            }`}
+                            className={`h-5 w-5 rounded border-2 transition-all focus:outline-none focus:ring-2 focus:ring-white/50 ${lineColor === color ? 'border-white scale-110' : 'border-zinc-700 hover:border-zinc-600'
+                              }`}
                             style={{ backgroundColor: color }}
                             title={label}
                             aria-label={`Set line color to ${label}`}
@@ -1508,38 +1553,37 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer"
                       />
                     </div>
-                     <div className="my-1 border-t border-zinc-800" />
-                     <button
-                       className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
-                       onClick={exportConfig}
-                     >
-                       <span>Export configuration</span>
-                       <span className="text-[10px] opacity-50 font-mono">Ctrl+E</span>
-                     </button>
-                     <button
-                       className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
-                       onClick={importConfig}
-                     >
-                       <span>Import configuration</span>
-                       <span className="text-[10px] opacity-50 font-mono">Ctrl+I</span>
-                     </button>
-                     <div className="my-1 border-t border-zinc-800" />
-                     <button
-                       className="flex w-full items-center justify-between px-3 py-1.5 text-left text-red-400 hover:bg-red-500/10"
-                       onClick={handleHide}
-                     >
-                       <span>Hide for me</span>
-                       <span className="text-[10px] opacity-50 font-mono">d</span>
-                     </button>
-                   </div>
-                 )}
-               </div>
-             </div>
+                    <div className="my-1 border-t border-zinc-800" />
+                    <button
+                      className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
+                      onClick={exportConfig}
+                    >
+                      <span>Export configuration</span>
+                      <span className="text-[10px] opacity-50 font-mono">Ctrl+E</span>
+                    </button>
+                    <button
+                      className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-white/5"
+                      onClick={importConfig}
+                    >
+                      <span>Import configuration</span>
+                      <span className="text-[10px] opacity-50 font-mono">Ctrl+I</span>
+                    </button>
+                    <div className="my-1 border-t border-zinc-800" />
+                    <button
+                      className="flex w-full items-center justify-between px-3 py-1.5 text-left text-red-400 hover:bg-red-500/10"
+                      onClick={handleHide}
+                    >
+                      <span>Hide for me</span>
+                      <span className="text-[10px] opacity-50 font-mono">d</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div
-              className={`flex flex-col ${
-                displayMode === 'compact' ? 'gap-0.5' : 'gap-1'
-              }`}
+              className={`flex flex-col ${displayMode === 'compact' ? 'gap-0.5' : 'gap-1'
+                }`}
             >
               {/* Search Input */}
               {(displayMode === 'full' || displayMode === 'compact') && (
@@ -1568,8 +1612,8 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                 </div>
               )}
               {itemsToRender.map((item, idx) => {
-                const originalIndex = idx; 
-                
+                const originalIndex = idx;
+
                 const hasConn = connections.find((c) => c.todoIndex === originalIndex)
                 const isSelecting = selectingIndex === originalIndex
                 const currentStatus = getItemStatus(originalIndex)
@@ -1605,18 +1649,17 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
-                          const nextStatus: TodoStatus = 
+                          const nextStatus: TodoStatus =
                             currentStatus === 'todo' ? 'working' :
-                            currentStatus === 'working' ? 'done' : 'todo'
+                              currentStatus === 'working' ? 'done' : 'todo'
                           setItemStatus(originalIndex, nextStatus)
                         }}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
-                          currentStatus === 'done' 
-                            ? 'border-green-500 bg-green-500/20' 
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${currentStatus === 'done'
+                            ? 'border-green-500 bg-green-500/20'
                             : currentStatus === 'working'
-                            ? 'border-yellow-500 bg-yellow-500/20'
-                            : 'border-zinc-600 hover:border-zinc-500'
-                        }`}
+                              ? 'border-yellow-500 bg-yellow-500/20'
+                              : 'border-zinc-600 hover:border-zinc-500'
+                          }`}
                         title={`Status: ${currentStatus} (click to cycle)`}
                       >
                         {currentStatus === 'done' && (
@@ -1645,7 +1688,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                         ✕
                       </button>
                     )}
-                    
+
                     {item.info && (
                       <div
                         className="absolute left-0 top-full mt-2 hidden w-64 p-3
@@ -1658,9 +1701,9 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                   </div>
                 )
               })}
-              
+
               {hasMore && (
-                 <button
+                <button
                   onClick={toggleViewMore}
                   className={`w-full text-center text-[10px] uppercase tracking-widest py-1
                     ${theme.colors.textDim} hover:text-zinc-300 transition-colors border-t border-zinc-800/50 mt-1`}
@@ -1677,7 +1720,7 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       {openIssueIndex !== null && categoryData && (() => {
         const item = categoryData.items[openIssueIndex]
         if (!item) return null
-        
+
         return createPortal(
           <div
             className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
@@ -1701,18 +1744,17 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                   <button
                     onClick={() => {
                       const currentStatus = getItemStatus(openIssueIndex)
-                      const nextStatus: TodoStatus = 
+                      const nextStatus: TodoStatus =
                         currentStatus === 'todo' ? 'working' :
-                        currentStatus === 'working' ? 'done' : 'todo'
+                          currentStatus === 'working' ? 'done' : 'todo'
                       setItemStatus(openIssueIndex, nextStatus)
                     }}
-                    className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono transition-all ${
-                      getItemStatus(openIssueIndex) === 'done'
+                    className={`px-3 py-1.5 rounded-md border-2 text-xs font-mono transition-all ${getItemStatus(openIssueIndex) === 'done'
                         ? 'border-green-500 bg-green-500/20 text-green-400'
                         : getItemStatus(openIssueIndex) === 'working'
-                        ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
-                    }`}
+                          ? 'border-yellow-500 bg-yellow-500/20 text-yellow-400'
+                          : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600'
+                      }`}
                   >
                     {getItemStatus(openIssueIndex).toUpperCase()}
                   </button>
@@ -1776,13 +1818,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
                       {item.priority && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-zinc-500 font-mono">Priority:</span>
-                          <span className={`px-2 py-1 rounded text-xs font-mono ${
-                            item.priority === 'high'
+                          <span className={`px-2 py-1 rounded text-xs font-mono ${item.priority === 'high'
                               ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                               : item.priority === 'medium'
-                              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                              : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          }`}>
+                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            }`}>
                             {item.priority.toUpperCase()}
                           </span>
                         </div>
@@ -1871,13 +1912,12 @@ function VigiloCore<TCategories extends readonly CategoryConfig[] = CategoryConf
       {/* Toast Notifications */}
       {toast && createPortal(
         <div
-          className={`fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all ${
-            toast.type === 'success' 
+          className={`fixed top-4 right-4 z-[10001] px-4 py-3 rounded-lg border shadow-xl font-mono text-sm transition-all ${toast.type === 'success'
               ? 'bg-green-500/10 border-green-500/30 text-green-400'
               : toast.type === 'error'
-              ? 'bg-red-500/10 border-red-500/30 text-red-400'
-              : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-          } vigilo-toast`}
+                ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+            } vigilo-toast`}
         >
           {toast.message}
         </div>,
