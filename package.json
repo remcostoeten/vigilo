@@ -1,6 +1,6 @@
 {
   "name": "@remcostoeten/vigilo",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "A lightweight task awareness overlay for development environments",
   "author": "Remco Stoeten",
   "license": "MIT",
