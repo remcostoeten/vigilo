@@ -1,9 +1,9 @@
-export { useVigiloStore } from './use-btwfyi-store'
-export type { UseVigiloStoreOptions, UseVigiloStoreReturn } from './use-btwfyi-store'
-// Note: To use the Vigilo component, import it directly:
-// import Vigilo from 'btwfyi/vue/Vigilo.vue'
+export { useBtwfyiStore } from './use-btwfyi-store'
+export type { UseBtwfyiStoreOptions, UseBtwfyiStoreReturn } from './use-btwfyi-store'
+// Note: To use the Btwfyi component, import it directly:
+// import Btwfyi from 'btwfyi/vue/Btwfyi.vue'
 // Your bundler (Vite, webpack with vue-loader, etc.) will handle the .vue file
-export type { VigiloProps, CategoryConfig } from './types'
+export type { BtwfyiProps, CategoryConfig } from './types'
 export { generateSelector, getElementLabel, isValidSelector } from './dom'
 export {
   theme,
