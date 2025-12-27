@@ -14,6 +14,7 @@ import {
 } from './registry'
 import { parseSmartSyntax } from '../core/smart-syntax'
 import { enhanceTask, isAIAvailable } from '../core/ai'
+import { enhanceWithGrok, smartParseWithGrok } from '../core/grok'
 
 function isEditableElement(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false
@@ -43,6 +44,10 @@ export interface BtwfyiCommandPaletteProps {
    */
   disableShortcut?: boolean
   onTaskCreate?: (task: { text: string; dueDate?: Date; tags: string[]; priority?: 'low' | 'medium' | 'high' }) => void
+  aiConfig?: {
+    grokApiKey?: string
+    preferCloud?: boolean
+  }
 }
 
 /**
@@ -54,6 +59,7 @@ export function BtwfyiCommandPalette({
   shortcutModifier = 'alt',
   disableShortcut = false,
   onTaskCreate,
+  aiConfig,
 }: BtwfyiCommandPaletteProps = {}) {
   const [isMounted, setIsMounted] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -61,6 +67,7 @@ export function BtwfyiCommandPalette({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isAISupported, setIsAISupported] = useState(false)
   const [isEnhancing, setIsEnhancing] = useState(false)
+  const [isParsing, setIsParsing] = useState(false)
   const [instances, setInstances] = useState<PaletteInstanceSnapshot[]>(
     () => getPaletteInstances()
   )
@@ -281,7 +288,7 @@ export function BtwfyiCommandPalette({
                 }
 
                 // 2. Try Markdown/List Import
-                if (text.includes('\n')) {
+                if (text.includes('\n') || text.trim().startsWith('-')) {
                   // Check for markdown list items (unordered or ordered)
                   const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
                   // Improved list detection: - * 1. or just bullet-like characters
@@ -296,7 +303,21 @@ export function BtwfyiCommandPalette({
                       onTaskCreate(parsed)
                     })
                     closePalette()
+                    return
                   }
+                }
+
+                // 3. Try Grok Smart Parse (fallback if configured)
+                if (aiConfig?.grokApiKey && !isParsing) {
+                  e.preventDefault()
+                  setIsParsing(true)
+                  smartParseWithGrok(text, aiConfig.grokApiKey)
+                    .then(tasks => {
+                      tasks.forEach(t => onTaskCreate(t))
+                      if (tasks.length > 0) closePalette()
+                    })
+                    .catch(console.error)
+                    .finally(() => setIsParsing(false))
                 }
               }}
               value={query}
@@ -308,14 +329,23 @@ export function BtwfyiCommandPalette({
               aria-controls="btwfyi-palette-list"
               aria-expanded="true"
             />
-            {isAISupported && (
+            {(isAISupported || aiConfig?.grokApiKey) && (
               <button
                 onClick={async () => {
                   if (!query.trim() || isEnhancing) return
                   setIsEnhancing(true)
                   try {
-                    const enhanced = await enhanceTask(query)
+                    let enhanced = ''
+                    // Prefer Cloud if configured and not explicitly set to prefer local (or if local is not available)
+                    if (aiConfig?.grokApiKey && (!isAISupported || aiConfig.preferCloud)) {
+                      enhanced = await enhanceWithGrok(query, aiConfig.grokApiKey)
+                    } else if (isAISupported) {
+                      enhanced = await enhanceTask(query)
+                    }
+
                     if (enhanced) setQuery(enhanced)
+                  } catch (e) {
+                    console.error('Enhance failed', e)
                   } finally {
                     setIsEnhancing(false)
                     inputRef.current?.focus()
@@ -327,7 +357,7 @@ export function BtwfyiCommandPalette({
                     ${!query.trim() ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-zinc-800 text-amber-300'}
                     ${isEnhancing ? 'animate-pulse cursor-wait' : ''}
                  `}
-                title="Enhance with AI"
+                title={aiConfig?.grokApiKey ? "Enhance with Grok AI" : "Enhance with Local AI"}
               >
                 ✨
               </button>

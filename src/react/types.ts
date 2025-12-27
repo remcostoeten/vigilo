@@ -16,6 +16,10 @@ export interface BtwfyiProps<
   categories: TCategories
   enabled?: boolean
   onTaskCreate?: (task: { text: string; dueDate?: Date; tags: string[]; priority?: 'low' | 'medium' | 'high' }) => void
+  aiConfig?: {
+    grokApiKey?: string
+    preferCloud?: boolean
+  }
   /** Custom className to apply to the panel container */
   className?: string
   /** Override any theme token while keeping defaults for unspecified keys */
