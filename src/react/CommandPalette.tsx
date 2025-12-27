@@ -13,6 +13,7 @@ import {
   type PaletteTaskSnapshot,
 } from './registry'
 import { parseSmartSyntax } from '../core/smart-syntax'
+import { enhanceTask, isAIAvailable } from '../core/ai'
 
 function isEditableElement(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false
@@ -58,6 +59,8 @@ export function BtwfyiCommandPalette({
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [isAISupported, setIsAISupported] = useState(false)
+  const [isEnhancing, setIsEnhancing] = useState(false)
   const [instances, setInstances] = useState<PaletteInstanceSnapshot[]>(
     () => getPaletteInstances()
   )
@@ -67,6 +70,7 @@ export function BtwfyiCommandPalette({
 
   useEffect(() => {
     setIsMounted(true)
+    isAIAvailable().then(setIsAISupported)
   }, [])
 
   useEffect(() => subscribePaletteInstances(setInstances), [])
@@ -282,6 +286,30 @@ export function BtwfyiCommandPalette({
               aria-controls="btwfyi-palette-list"
               aria-expanded="true"
             />
+            {isAISupported && (
+              <button
+                onClick={async () => {
+                  if (!query.trim() || isEnhancing) return
+                  setIsEnhancing(true)
+                  try {
+                    const enhanced = await enhanceTask(query)
+                    if (enhanced) setQuery(enhanced)
+                  } finally {
+                    setIsEnhancing(false)
+                    inputRef.current?.focus()
+                  }
+                }}
+                disabled={!query.trim() || isEnhancing}
+                className={`
+                    p-1 rounded-md transition-colors 
+                    ${!query.trim() ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-zinc-800 text-amber-300'}
+                    ${isEnhancing ? 'animate-pulse cursor-wait' : ''}
+                 `}
+                title="Enhance with AI"
+              >
+                ✨
+              </button>
+            )}
             <kbd className="rounded-md border border-zinc-800 px-2 py-1 text-xs text-zinc-400" aria-label="Press Escape to close">
               esc
             </kbd>
