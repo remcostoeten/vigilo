@@ -1,7 +1,7 @@
 # btwfyi
 
-**btwfyi** _(verb)_  
-/ˈwi.ɡi.loː/ — _Latin, "to watch, stay alert, keep aware."_
+**btwfyi** _(noun)_  
+/ˈbɪt.waɪ.faɪ.aɪ/ — _The art of looking productive while your task list grows, plus that nagging feeling when you remember you forgot something._
 
 A lightweight task awareness overlay for development environments. btwfyi keeps tasks visible on top of your interface, helping you stay focused, plan effectively, and avoid forgetting important work. Designed for developers who want persistent task clarity without leaving the UI.
 
